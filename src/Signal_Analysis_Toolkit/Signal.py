@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 import pandas as pd
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 
 class Signal:  # Parent class 
     def __init__(self, duration: int=10, sample_rate: int=100, amplitude: int = 1, frequency: int = 1, phase: int = 0, noise: float=0):
@@ -43,10 +47,10 @@ class Signal:  # Parent class
                            "frequency": self.frequency, 
                            "phase": self.phase, 
                            "noise": self.noise} )
-        df.to_csv(f"data_{tag}.csv", index=False)
+        df.to_csv(DATA_DIR/ f"data_{tag}.csv", index=False)
 
 def load_signal(filename: str): 
-    df = pd.read_csv(filename)
+    df = pd.read_csv(DATA_DIR/filename)
     class_name = df["type"].iloc[0]
     #Dynamic subclass lookup
     subclasses = {cls.__name__: cls for cls in [Signal] + Signal.__subclasses__()}
@@ -96,17 +100,3 @@ class SquareSignal(Signal):
             ax.set_title("Square Signal")
             plt.show()
 
-
-y = SineSignal(5, 100,amplitude=2, frequency=1)
-y_noisy = y.noisy(0.3)
-square = SquareSignal(5, 100, amplitude=1, frequency=2)
-square_noisy = square.noisy(0.4)
-square_noisy.plot_signal()
-square_noisy.save_signal("square1_noisy")
-# y_noisy.plot_signal()
-
-# y.save_signal("1")
-# y_noisy.save_signal("1_noisy")
-
-y_loaded = load_signal('data_1_noisy.csv')
-y_loaded.plot_signal()
