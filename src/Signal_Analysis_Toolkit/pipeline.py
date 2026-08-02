@@ -37,3 +37,41 @@ def smooth(signal, window=3, normal=False):
         kernel = np.ones(window) / window
         smoothed = np.convolve(signal, kernel, mode='same')
     return smoothed    
+
+def find_dominant_frequency(signal, sample_rate):
+    fft_signal = np.fft.fft(signal)
+    freqs = np.fft.fftfreq(len(signal), d=1/sample_rate)
+    half = len(signal)//2
+    positive_freqs = freqs[:half]
+    magnitude = np.abs(fft_signal[:half])
+    peak_index = np.argmax(magnitude)
+    return positive_freqs[peak_index]
+
+def min_max_normalize(signal):
+    return (signal - signal.min())/(signal.max()-signal.min())
+
+def z_score_normalize(signal):
+    return (signal - signal.mean())/signal.std()
+
+def clip_outliers(signal, n_std=3):
+    mean, std = signal.mean(), signal.std()
+    return np.clip(signal, mean-n_std*std, mean + n_std*std)
+
+def lowpass_filter(signal, sample_rate, cutoff):
+    fft_vals = np.fft.fft(signal)
+    freqs = np.fft.fftfreq(len(signal), d=1/sample_rate)
+    fft_vals[np.abs(freqs) > cutoff] = 0
+    return np.fft.ifft(fft_vals).real
+
+def highpass_filter(signal, sample_rate, cutoff): 
+    fft_vals = np.fft.fft(signal)
+    freqs = np.fft.fftfreq(len(signal), d=1/sample_rate)
+    fft_vals[np.abs(freqs) < cutoff] = 0
+    return np.fft.ifft(fft_vals).real
+
+def bandpass_filter(signal, sample_rate, low, high): 
+    fft_vals = np.fft.fft(signal)
+    freqs = np.fft.fftfreq(len(signal), d=1/sample_rate)
+    fft_vals[np.abs(freqs) < low] = 0
+    fft_vals[np.abs(freqs) > high] = 0
+    return np.fft.ifft(fft_vals).real
